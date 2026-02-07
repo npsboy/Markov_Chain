@@ -1,0 +1,113 @@
+import string
+
+def read_text_file(file_path):
+    """Read and return the contents of a text file."""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            text = file.read()
+        return text
+    except FileNotFoundError:
+        print(f"Error: File '{file_path}' not found.")
+        return None
+    except Exception as e:
+        print(f"Error reading file: {e}")
+        return None
+
+
+def process_text(text):
+    # Remove all punctuation
+    no_punct = text.translate(str.maketrans('', '', string.punctuation))
+    # Convert to lowercase
+    return no_punct.lower()
+
+
+def parse_training_data(data):
+    samples = []
+    lines = data.splitlines()
+    for line in lines:
+        if line.strip():  # Skip empty lines
+            words = line.strip().split()
+            samples.append(words)
+    return samples
+
+
+markov_chain = {}  # Placeholder for Markov chain model
+
+def train_model(samples):
+    for sample in samples:
+        for word in sample:
+            word_index = sample.index(word)
+            if word_index + 1 < len(sample):
+                first_two_words = str(word) + " " + str(sample[word_index + 1])
+            else:
+                continue
+            if word_index + 2 < len(sample):
+                following_word = sample[word_index + 2]
+            else:
+                continue
+            if first_two_words not in markov_chain:
+                markov_chain[first_two_words] = [following_word]
+            else:
+                markov_chain[first_two_words].append(following_word)
+
+
+def extract_keys_and_values(markov_chain):
+    keys = list(markov_chain.keys())
+    values = list(markov_chain.values())
+    return keys, values
+
+
+def save_to_text_file(data, file_path):
+    """Save data to a text file."""
+    try:
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write(str(data))
+    except Exception as e:
+        print(f"Error saving file: {e}")
+
+
+def add_to_text_file(data, file_path):
+    """Append data to a text file."""
+    try:
+        with open(file_path, 'a', encoding='utf-8') as file:
+            file.write('\n' + str(data))
+    except Exception as e:
+        print(f"Error appending to file: {e}")
+
+
+def format_list_to_string(data_list):
+    """Convert list to string, remove all commas."""
+    lines = []
+    for item in data_list:
+        if isinstance(item, list):
+            # Join sub-items with spaces, no commas
+            line = ' '.join(str(x) for x in item)
+            lines.append(line)
+        else:
+            lines.append(str(item))
+    return '\n'.join(lines)
+
+
+def main():
+    training_data = read_text_file('training-data.txt')
+    if training_data is None:
+        print("Failed to load training data.")
+        return
+
+    training_data = process_text(training_data)
+    print("Training data successfully loaded.")
+
+    training_samples = parse_training_data(training_data)
+    print(f"Parsed {len(training_samples)} training samples.")
+
+    train_model(training_samples)
+    print("Model training completed.")
+
+    save_to_text_file(markov_chain, 'markov_chain_model.txt')
+    keys, values = extract_keys_and_values(markov_chain)
+    save_to_text_file(format_list_to_string(keys), 'keys.txt')
+    save_to_text_file(format_list_to_string(values), 'values.txt')
+
+
+if __name__ == '__main__':
+    main()
