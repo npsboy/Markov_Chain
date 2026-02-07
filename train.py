@@ -31,9 +31,10 @@ def parse_training_data(data):
     return samples
 
 
-markov_chain = {}  # Placeholder for Markov chain model
+markov_chain_gram_2 = {} 
+markov_chain_gram_1 = {}  
 
-def train_model(samples):
+def train_model_gram_2(samples):
     for sample in samples:
         for word in sample:
             word_index = sample.index(word)
@@ -45,11 +46,23 @@ def train_model(samples):
                 following_word = sample[word_index + 2]
             else:
                 continue
-            if first_two_words not in markov_chain:
-                markov_chain[first_two_words] = [following_word]
+            if first_two_words not in markov_chain_gram_2:
+                markov_chain_gram_2[first_two_words] = [following_word]
             else:
-                markov_chain[first_two_words].append(following_word)
+                markov_chain_gram_2[first_two_words].append(following_word)
 
+def train_model_gram_1(samples):
+    for sample in samples:
+        for word in sample:
+            word_index = sample.index(word)
+            if word_index + 1 < len(sample):
+                following_word = sample[word_index + 1]
+            else:
+                continue
+            if word not in markov_chain_gram_1:
+                markov_chain_gram_1[word] = [following_word]
+            else:
+                markov_chain_gram_1[word].append(following_word)
 
 def extract_keys_and_values(markov_chain):
     keys = list(markov_chain.keys())
@@ -100,13 +113,21 @@ def main():
     training_samples = parse_training_data(training_data)
     print(f"Parsed {len(training_samples)} training samples.")
 
-    train_model(training_samples)
-    print("Model training completed.")
+    train_model_gram_2(training_samples)
+    print("Gram 2 model training completed.")
 
-    save_to_text_file(markov_chain, 'markov_chain_model.txt')
-    keys, values = extract_keys_and_values(markov_chain)
-    save_to_text_file(format_list_to_string(keys), 'keys.txt')
-    save_to_text_file(format_list_to_string(values), 'values.txt')
+    save_to_text_file(markov_chain_gram_2, './2gram/markov_chain_model_gram_2.txt')
+    keys, values = extract_keys_and_values(markov_chain_gram_2)
+    save_to_text_file(format_list_to_string(keys), './2gram/keys_gram_2.txt')
+    save_to_text_file(format_list_to_string(values), './2gram/values_gram_2.txt')
+
+    train_model_gram_1(training_samples)
+    print("Gram 1 model training completed.")
+
+    save_to_text_file(markov_chain_gram_1, './1gram/markov_chain_model_gram_1.txt')
+    keys, values = extract_keys_and_values(markov_chain_gram_1)
+    save_to_text_file(format_list_to_string(keys), './1gram/keys_gram_1.txt')
+    save_to_text_file(format_list_to_string(values), './1gram/values_gram_1.txt')
 
 
 if __name__ == '__main__':
