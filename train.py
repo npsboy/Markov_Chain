@@ -110,6 +110,8 @@ def main():
     training_data = process_text(training_data)
     print("Training data successfully loaded.")
 
+    save_to_text_file(training_data, 'training-data.txt')  # Save cleaned data back to original file
+
     training_samples = parse_training_data(training_data)
     print(f"Parsed {len(training_samples)} training samples.")
 
